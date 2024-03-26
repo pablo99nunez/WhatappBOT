@@ -55,7 +55,7 @@ app.post("/webhook", function (request, response) {
     response.send("Mensaje enviado");
   }).catch(err => {
     console.error(JSON.stringify(err));
-    response.send("Error", 401)
+    response.status(401).send("Error")
   })
 });
 
