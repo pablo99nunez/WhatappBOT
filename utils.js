@@ -6,8 +6,6 @@ function getNumber(number) {
   return finalnumber
 }
 
-console.log(getNumber('5492612512665'))
-
 module.exports = {
   getNumber
 }
