@@ -2,9 +2,9 @@
   "name": "wa-webhooks-test",
   "version": "0.0.1",
   "description": "This is a boilerplate app used to test WhatsApp webhooks",
-  "main": "api/server.js",
+  "main": "api/index.js",
   "scripts": {
-    "start": "node api/server.js",
+    "start": "node api/index.js",
     "dev": "nodemon"
   },
   "dependencies": {
