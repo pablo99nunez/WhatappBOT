@@ -12,7 +12,9 @@ async function getText(messages) {
 }
 async function transcribe(file) {
   try {
-    return (await openai.createTranscription(file, 'whisper-1', undefined, undefined, undefined, 'es')).data.text;
+    console.log('transcribing audio');
+    const transcription = await openai.audio.transcriptions.create({ file, model: 'whisper-1' })
+    return transcription.text
   } catch (err) {
     console.log(err.response.data.error);
     return '*Audio dañado*'

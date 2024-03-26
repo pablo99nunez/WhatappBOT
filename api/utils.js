@@ -1,3 +1,7 @@
+const { createReadStream, existsSync, fstat, readFile, readFileSync, unlinkSync, writeFile, writeFileSync } = require("fs");
+const axios = require('axios')
+const { exec } = require('child_process')
+
 function getNumber(number) {
   let finalnumber = number
   if (number.startsWith('549')) {
@@ -53,6 +57,28 @@ function checkFileExistence(filepath) {
     }, 10000);
   });
 }
+async function convertAudio(inputFile, format = 'mp3') {
+  return await new Promise((resolve, reject) => {
+    const command = `ffmpeg -i "${inputFile}" -c:a libmp3lame -q:a 2 "${inputFile}.${format}"`;
+    console.log('Converting audio file ');
+    console.log(`ffmpeg -i "${inputFile}" -c:a libmp3lame -q:a 2 "${inputFile}.${format}"`);
+
+    exec(command, (error, stdout, stderr) => {
+      if (error) {
+        console.log('Failed to convert: ' + error);
+        console.log(stderr);
+
+        reject(error);
+      } else {
+        console.log('File converted: ' + inputFile + '.' + format);
+        console.log(stdout);
+        resolve();
+      }
+    });
+  });
+
+}
+
 
 
 module.exports = {

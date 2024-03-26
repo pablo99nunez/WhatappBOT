@@ -6,7 +6,6 @@ require('dotenv').config()
 const { createReadStream, existsSync, fstat, readFile, readFileSync, unlinkSync, writeFile, writeFileSync } = require("fs");
 
 
-
 axios = axios.create({
   baseURL: 'https://graph.facebook.com/v19.0/',
 })
@@ -24,9 +23,10 @@ async function sendText(response, request) {
     const phone_id = metadata.phone_number_id;
     const phone_number = getNumber(contacts[0].wa_id);
     const type = messages[0].type;
+    let text, axiosResponse;
     switch (type) {
       case 'text':
-        let text = messages[0].text.body;
+        text = messages[0].text.body;
         const message_id = messages[0].id;
 
         axios.post(`${phone_id}/messages`, {
@@ -37,7 +37,7 @@ async function sendText(response, request) {
 
         const textToSend = await getText([...conversation, { role: 'user', content: text }]);
 
-        const axiosResponse = await axios.post(`${phone_id}/messages`, {
+        axiosResponse = await axios.post(`${phone_id}/messages`, {
           messaging_product: "whatsapp",
           recipient_type: "individual",
           to: phone_number,
@@ -52,8 +52,10 @@ async function sendText(response, request) {
         response.send("Mensaje enviado");
         break;
       case 'audio':
-        const mediaId = obj.entry[0].changes[0].value.messages[0].audio.id;
+        console.log('Audio received');
+        const mediaId = request.body.entry[0].changes[0].value.messages[0].audio.id;
         const url = await getMediaUrl(mediaId);
+        console.log('Url fetch', url);
         const filename = './audio1'
         await downloadFile(url, filename)
         await checkFileExistence(filename + '.mp3')
@@ -71,6 +73,9 @@ async function sendText(response, request) {
             body: text
           }
         });
+        console.log(axiosResponse);
+        response.send("Audio transcripto");
+        break
       default:
         console.error(JSON.stringify(error));
         response.status(401).send("Error");
@@ -78,11 +83,18 @@ async function sendText(response, request) {
 
   } catch (error) {
     console.error(JSON.stringify(error));
-    response.status(401).send("Error");
+    response.status(401).send("Error: " + error);
   }
 }
 
-
+async function getMediaUrl(mediaId) {
+  return await axios(mediaId).then(data => {
+    const mediaUrl = data.data.url;
+    return mediaUrl;
+  }).catch((err) => {
+    throw new Error(err.error.message);
+  });
+}
 
 module.exports = {
   sendText
