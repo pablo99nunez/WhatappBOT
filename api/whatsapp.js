@@ -1,8 +1,10 @@
 let axios = require("axios");
-const { getText } = require("./gpt");
-const { getNumber } = require("./utils");
+const { getText, transcribe } = require("./gpt");
+const { getNumber, downloadFile, checkFileExistence } = require("./utils");
 const { kv } = require('@vercel/kv')
 require('dotenv').config()
+const { createReadStream, existsSync, fstat, readFile, readFileSync, unlinkSync, writeFile, writeFileSync } = require("fs");
+
 
 
 axios = axios.create({
@@ -21,30 +23,59 @@ async function sendText(response, request) {
     const { name } = contacts[0].profile;
     const phone_id = metadata.phone_number_id;
     const phone_number = getNumber(contacts[0].wa_id);
-    const text = messages[0].text.body;
-    const message_id = messages[0].id;
+    const type = messages[0].type;
+    switch (type) {
+      case 'text':
+        let text = messages[0].text.body;
+        const message_id = messages[0].id;
 
-    axios.post(`${phone_id}/messages`, {
-      messaging_product: 'whatsapp',
-      status: 'read',
-      message_id
-    }).catch(err => console.error(err))
+        axios.post(`${phone_id}/messages`, {
+          messaging_product: 'whatsapp',
+          status: 'read',
+          message_id
+        }).catch(err => console.error(err))
 
-    const textToSend = await getText([...conversation, { role: 'user', content: text }]);
+        const textToSend = await getText([...conversation, { role: 'user', content: text }]);
 
-    const axiosResponse = await axios.post(`${phone_id}/messages`, {
-      messaging_product: "whatsapp",
-      recipient_type: "individual",
-      to: phone_number,
-      type: "text",
-      text: {
-        preview_url: false,
-        body: textToSend
-      }
-    });
+        const axiosResponse = await axios.post(`${phone_id}/messages`, {
+          messaging_product: "whatsapp",
+          recipient_type: "individual",
+          to: phone_number,
+          type: "text",
+          text: {
+            preview_url: false,
+            body: textToSend
+          }
+        });
 
-    console.log(axiosResponse);
-    response.send("Mensaje enviado");
+        console.log(axiosResponse);
+        response.send("Mensaje enviado");
+        break;
+      case 'audio':
+        const mediaId = obj.entry[0].changes[0].value.messages[0].audio.id;
+        const url = await getMediaUrl(mediaId);
+        const filename = './audio1'
+        await downloadFile(url, filename)
+        await checkFileExistence(filename + '.mp3')
+        text = await transcribe(createReadStream(filename + '.mp3'));
+        console.log('Transcription: ' + text);
+        unlinkSync(`${filename}.mp3`)
+        console.log('File deleted');
+        axiosResponse = await axios.post(`${phone_id}/messages`, {
+          messaging_product: "whatsapp",
+          recipient_type: "individual",
+          to: phone_number,
+          type: "text",
+          text: {
+            preview_url: false,
+            body: text
+          }
+        });
+      default:
+        console.error(JSON.stringify(error));
+        response.status(401).send("Error");
+    }
+
   } catch (error) {
     console.error(JSON.stringify(error));
     response.status(401).send("Error");

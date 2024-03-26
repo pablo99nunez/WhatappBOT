@@ -10,8 +10,16 @@ async function getText(messages) {
   kv.set('conversation', [{ role: 'system', content: 'Tienes una personalidad tonta, divertida, despreocupada, inocente, sarcastica.' }, ...messages, { role: 'assistant', content: response }])
   return response
 }
-
+async function transcribe(file) {
+  try {
+    return (await openai.createTranscription(file, 'whisper-1', undefined, undefined, undefined, 'es')).data.text;
+  } catch (err) {
+    console.log(err.response.data.error);
+    return '*Audio dañado*'
+  }
+}
 
 module.exports = {
-  getText
+  getText,
+  transcribe
 }
