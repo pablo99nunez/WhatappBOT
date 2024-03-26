@@ -37,7 +37,6 @@ app.get('/webhook', function (req, res) {
 });
 
 app.post("/webhook", function (request, response) {
-  console.log('Incoming webhook: ' + JSON.stringify(request.body));
   let name = request.body.entry[0].changes[0].value.contacts[0].profile.name
   let phone_id = request.body.entry[0].changes[0].value.metadata.phone_number_id
   let phone_number = getNumber(request.body.entry[0].changes[0].value.contacts[0].wa_id)
@@ -51,8 +50,13 @@ app.post("/webhook", function (request, response) {
       "preview_url": false,
       "body": name + text
     }
+  }).then(res => {
+    console.log(res);
+    response.send("Mensaje enviado");
+  }).catch(err => {
+    console.error(err);
+    response.send("Error", 401)
   })
-  response.sendStatus(200);
 });
 
 let server = express()
