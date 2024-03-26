@@ -22,6 +22,13 @@ async function sendText(response, request) {
     const phone_id = metadata.phone_number_id;
     const phone_number = getNumber(contacts[0].wa_id);
     const text = messages[0].text.body;
+    const message_id = messages[0].id;
+
+    axios.post(`${phone_id}/messages`, {
+      messaging_product: 'whatsapp',
+      status: 'read',
+      message_id
+    }).catch(err => console.error(err))
 
     const textToSend = await getText([...conversation, { role: 'user', content: text }]);
 
