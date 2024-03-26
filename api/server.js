@@ -5,7 +5,8 @@ let { getNumber } = require('./utils')
 
 require('dotenv').config()
 
-var app = express();
+var app = express.Router();
+
 let axios = require('axios')
 
 axios = axios.create({
@@ -13,7 +14,6 @@ axios = axios.create({
 })
 
 axios.defaults.headers.common['Authorization'] = 'Bearer ' + process.env.WHATSAPP_TOKEN
-
 
 
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -55,6 +55,9 @@ app.post("/webhook", function (request, response) {
   response.sendStatus(200);
 });
 
-var listener = app.listen(process.env.PORT, function () {
+let server = express()
+server.use('/api', app)
+
+var listener = server.listen(process.env.PORT, function () {
   console.log('Your app is listening on port ' + listener.address().port);
 });
