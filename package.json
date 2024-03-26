@@ -4,12 +4,16 @@
   "description": "This is a boilerplate app used to test WhatsApp webhooks",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "dev": "nodemon server.js"
   },
   "dependencies": {
-    "express": "^4.16.3",
+    "axios": "^1.6.8",
     "body-parser": "^1.18.3",
-    "crypto-js": "^3.3.0"
+    "crypto-js": "^3.3.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.16.3",
+    "nodemon": "^3.1.0"
   },
   "engines": {
     "node": "6.10.x"
